@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ITZFIZZ — Velocity & Precision Scroll Hero Animation</title>
+  <meta name="description" content="Next-Generation Scroll-Driven Automotive Hero Section Animation powered by GSAP & ScrollTrigger." />
+
+  <!-- Fonts & GSAP Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+  <style>
+    :root {
+      --neon-lime: #def54f;
+      --neon-blue: #6ac9ff;
+      --neon-purple: #d946ef;
+      --neon-orange: #fa7328;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #07080b;
+      color: #f3f4f6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Sleek scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07080b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #232733;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-lime);
+    }
+
+    /* Fixed Header */
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      pointer-events: none;
+    }
+    .nav-pill {
+      pointer-events: auto;
+      background: rgba(14, 17, 24, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.5rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .brand-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(57, 255, 20, 0.15);
+      color: #39ff14;
+      border: 1px solid rgba(57, 255, 20, 0.3);
+    }
+
+    /* Pinned Hero Section */
+    .section {
+      height: 350vh;
+      position: relative;
+      background: #07080b;
+    }
+
+    .track {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b0d13;
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      overflow: hidden;
+    }
+
+    .ambient-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70vw;
+      height: 350px;
+      background: radial-gradient(circle, rgba(222, 245, 79, 0.15) 0%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Asphalt Roadway */
+    .road {
+      width: 100vw;
+      height: 240px;
+      background-color: #12141a;
+      position: relative;
+      overflow: visible;
+      border-top: 2px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .road-center-line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
+      pointer-events: none;
+    }
+
+    /* McLaren Vehicle */
+    .car-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      height: 200px;
+      width: 320px;
+      z-index: 25;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .car-img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.85)) brightness(1.05);
+    }
+
+    .headlight-cone {
+      position: absolute;
+      top: 50%;
+      left: 85%;
+      transform: translateY(-50%);
+      width: 350px;
+      height: 220px;
+      background: radial-gradient(ellipse at left center, rgba(255,255,255,0.9) 0%, rgba(222,245,79,0.35) 40%, transparent 80%);
+      clip-path: polygon(0% 40%, 100% 0%, 100% 100%, 0% 60%);
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    /* Laser Trail */
+    .trail {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(222,245,79,0.2) 60%, rgba(222,245,79,0.85) 100%);
+      border-right: 3px solid var(--neon-lime);
+      box-shadow: 0 0 35px rgba(222, 245, 79, 0.4);
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 5;
+      width: 0;
+      pointer-events: none;
+    }
+
+    /* Headline Letters */
+    .value-add {
+      position: absolute;
+      left: 6%;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: clamp(3.5rem, 8vw, 8.5rem);
+      font-weight: 900;
+      font-family: 'Syne', sans-serif;
+      z-index: 15;
+      display: flex;
+      gap: clamp(0.3rem, 1vw, 1.2rem);
+      letter-spacing: 0.15em;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .value-letter {
+      color: #1a1d26;
+      opacity: 0.25;
+      transition: color 0.2s, text-shadow 0.25s, opacity 0.2s, transform 0.2s;
+      display: inline-block;
+    }
+
+    .value-letter.active {
+      color: #ffffff !important;
+      opacity: 1 !important;
+      text-shadow: 0 0 25px var(--neon-lime), 0 0 50px var(--neon-lime);
+      transform: scale(1.04) translateY(-2px);
+    }
+
+    /* Impact Metrics / Statistics Cards */
+    .stat-card {
+      position: absolute;
+      z-index: 30;
+      background: rgba(18, 22, 31, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 1.5rem 1.75rem;
+      min-width: 260px;
+      max-width: 320px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-number {
+      font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+      font-weight: 900;
+      font-family: 'Syne', sans-serif;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #d1d5db;
+      line-height: 1.4;
+    }
+
+    .stat-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 0.75rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Card Positions */
+    #box1 { top: 8%; right: 26%; }
+    #box2 { bottom: 8%; right: 32%; }
+    #box3 { top: 8%; right: 4%; }
+    #box4 { bottom: 8%; right: 4%; }
+
+    #box1 .stat-number { color: var(--neon-lime); }
+    #box2 .stat-number { color: var(--neon-blue); }
+    #box3 .stat-number { color: var(--neon-purple); }
+    #box4 .stat-number { color: var(--neon-orange); }
+
+    /* Telemetry HUD Footer */
+    .hud-bar {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      width: min(90%, 900px);
+      background: rgba(14, 17, 24, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    }
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .hud-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+    .hud-lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+    }
+
+    /* Scroll Prompt */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: #6b7280;
+      text-transform: uppercase;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+    .mouse-wheel {
+      width: 20px;
+      height: 32px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      padding-top: 4px;
+    }
+    .mouse-dot {
+      width: 4px;
+      height: 6px;
+      background: var(--neon-lime);
+      border-radius: 2px;
+      animation: bounce 1.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.3; }
+      50% { transform: translateY(8px); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="nav-bar">
+    <div class="nav-pill">
+      <span class="brand-title">ITZFIZZ</span>
+      <span class="badge">60 FPS • GSAP</span>
+    </div>
+    <div class="nav-pill">
+      <span class="hud-lbl">Scroll Velocity Controlled</span>
+    </div>
+  </header>
+
+  <!-- Pinned Hero Scroll Container -->
+  <div class="section">
+    <div class="track">
+      <div class="ambient-glow"></div>
+
+      <!-- Center Road -->
+      <div class="road" id="road">
+        <div class="road-center-line"></div>
+        <div class="trail" id="trail"></div>
+
+        <!-- Headline Typography -->
+        <div class="value-add" id="valueText">
+          <span class="value-letter">W</span>
+          <span class="value-letter">E</span>
+          <span class="value-letter">L</span>
+          <span class="value-letter">C</span>
+          <span class="value-letter">O</span>
+          <span class="value-letter">M</span>
+          <span class="value-letter">E</span>
+          <span class="value-letter">&nbsp;</span>
+          <span class="value-letter">I</span>
+          <span class="value-letter">T</span>
+          <span class="value-letter">Z</span>
+          <span class="value-letter">F</span>
+          <span class="value-letter">I</span>
+          <span class="value-letter">Z</span>
+          <span class="value-letter">Z</span>
+        </div>
+
+        <!-- Car with Headlight Projection -->
+        <div class="car-wrapper" id="car">
+          <div class="headlight-cone"></div>
+          <img src="mclaren-720s.png" alt="McLaren 720S" class="car-img" />
+        </div>
+      </div>
+
+      <!-- Impact Metrics / Statistics -->
+      <div class="stat-card" id="box1">
+        <div class="stat-number">58%</div>
+        <div class="stat-label">Increase in pick up point use</div>
+        <div class="stat-meta">
+          <span>METRIC 01</span>
+          <span style="color: #39ff14;">+18.4% YoY</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="box2">
+        <div class="stat-number">23%</div>
+        <div class="stat-label">Decreased in customer phone calls</div>
+        <div class="stat-meta">
+          <span>METRIC 02</span>
+          <span style="color: #6ac9ff;">-4,200 hrs/mo</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="box3">
+        <div class="stat-number">99.4%</div>
+        <div class="stat-label">Autonomous telemetry precision & uptime</div>
+        <div class="stat-meta">
+          <span>METRIC 03</span>
+          <span style="color: #d946ef;">Zero Dropout</span>
+        </div>
+      </div>
+
+      <div class="stat-card" id="box4">
+        <div class="stat-number">4.2x</div>
+        <div class="stat-label">Faster real-time dispatch throughput</div>
+        <div class="stat-meta">
+          <span>METRIC 04</span>
+          <span style="color: #fa7328;">Sub-millisecond</span>
+        </div>
+      </div>
+
+      <!-- Scroll hint -->
+      <div class="scroll-hint">
+        <div class="mouse-wheel">
+          <div class="mouse-dot"></div>
+        </div>
+        <span>SCROLL TO ACCELERATE</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Telemetry HUD Bottom Bar -->
+  <div class="hud-bar">
+    <div class="hud-item">
+      <span class="hud-val" id="hud-speed">0 MPH</span>
+      <span class="hud-lbl">Telemetry Speed</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-val" id="hud-gear">1 GEAR</span>
+      <span class="hud-lbl">Transmission</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-val" id="hud-progress">0%</span>
+      <span class="hud-lbl">Timeline Progress</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-val" style="color: var(--neon-lime);">60 FPS</span>
+      <span class="hud-lbl">GPU Render Rate</span>
+    </div>
+  </div>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Initialize Smooth Lenis Scroll
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // Initial Load Animations
+    window.addEventListener('DOMContentLoaded', () => {
+      gsap.fromTo(
+        '.value-letter',
+        { opacity: 0, y: 30, scale: 0.8 },
+        { opacity: 0.25, y: 0, scale: 1, duration: 1.0, stagger: 0.04, ease: 'power3.out', delay: 0.2 }
+      );
+      gsap.fromTo(
+        '.stat-card',
+        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 0.35, y: 0, scale: 1, duration: 0.8, stagger: 0.15, ease: 'back.out(1.4)', delay: 0.6 }
+      );
+    });
+
+    const car = document.getElementById('car');
+    const trail = document.getElementById('trail');
+    const road = document.getElementById('road');
+    const letters = gsap.utils.toArray('.value-letter');
+    const valueAdd = document.getElementById('valueText');
+
+    const hudSpeed = document.getElementById('hud-speed');
+    const hudGear = document.getElementById('hud-gear');
+    const hudProgress = document.getElementById('hud-progress');
+
+    let lastScrollTime = performance.now();
+    let lastScrollY = window.scrollY;
+
+    function getMetrics() {
+      const roadWidth = road.offsetWidth;
+      const carWidth = car.offsetWidth || 300;
+      const endX = Math.max(0, roadWidth - carWidth - 20);
+      const valueRect = valueAdd.getBoundingClientRect();
+      const letterOffsets = letters.map((l) => l.offsetLeft);
+      return { roadWidth, carWidth, endX, valueRect, letterOffsets };
+    }
+
+    let { roadWidth, carWidth, endX, valueRect, letterOffsets } = getMetrics();
+
+    window.addEventListener('resize', () => {
+      const m = getMetrics();
+      roadWidth = m.roadWidth;
+      carWidth = m.carWidth;
+      endX = m.endX;
+      valueRect = m.valueRect;
+      letterOffsets = m.letterOffsets;
+      ScrollTrigger.refresh();
+    });
+
+    // Main Car Scroll Timeline
+    gsap.to(car, {
+      scrollTrigger: {
+        trigger: '.section',
+        start: 'top top',
+        end: 'bottom bottom',
+        pin: '.track',
+        scrub: 0.45,
+        onUpdate: function (self) {
+          const p = self.progress;
+          const carX = p * endX;
+          const carFront = carX + carWidth * 0.75;
+
+          // Expand Laser Trail
+          gsap.set(trail, { width: Math.max(0, carX + carWidth * 0.5) });
+
+          // Light up letters dynamically
+          letters.forEach((letter, i) => {
+            const letterX = letterOffsets[i];
+            if (carFront >= letterX) {
+              letter.classList.add('active');
+            } else {
+              letter.classList.remove('active');
+            }
+          });
+
+          // Calculate Realtime Telemetry Speed
+          const now = performance.now();
+          const dt = (now - lastScrollTime) / 1000;
+          const dY = Math.abs(window.scrollY - lastScrollY);
+          const vel = dt > 0 ? dY / dt : 0;
+          lastScrollTime = now;
+          lastScrollY = window.scrollY;
+
+          const speed = Math.min(240, Math.round(vel * 0.15 + (p > 0.02 ? 40 + p * 80 : 0)));
+          const gear = speed < 1 ? 'N' : speed < 40 ? '1' : speed < 80 ? '2' : speed < 130 ? '3' : speed < 180 ? '4' : '5';
+
+          hudSpeed.textContent = `${speed} MPH`;
+          hudGear.textContent = `${gear} GEAR`;
+          hudProgress.textContent = `${Math.round(p * 100)}%`;
+        },
+      },
+      x: () => endX,
+      ease: 'none',
+    });
+
+    // Reveal Statistics Boxes with Smooth Scroll Easing
+    const statAnimations = [
+      { id: '#box1', start: 'top+=400 top', end: 'top+=800 top' },
+      { id: '#box2', start: 'top+=800 top', end: 'top+=1200 top' },
+      { id: '#box3', start: 'top+=1200 top', end: 'top+=1600 top' },
+      { id: '#box4', start: 'top+=1600 top', end: 'top+=2000 top' },
+    ];
+
+    statAnimations.forEach((item) => {
+      gsap.to(item.id, {
+        scrollTrigger: {
+          trigger: '.section',
+          start: item.start,
+          end: item.end,
+          scrub: 0.4,
+        },
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        ease: 'power2.out',
+      });
+    });
+  </script>
+</body>
+</html>
